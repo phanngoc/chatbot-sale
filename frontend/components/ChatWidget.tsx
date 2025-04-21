@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useChat } from '@lib/useChat'
+import ChatReplyHelper from './ChatReplyHelper'
 
 interface Message {
   id: string
@@ -18,6 +19,22 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
   const [message, setMessage] = useState('')
   const { messages, sendMessage, isConnected } = useChat()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Thêm biến userData giả lập, trong thực tế nên lấy từ context hoặc API
+  const userData = {
+    currentProduct: {
+      name: "iPhone 13 Pro Max",
+      price: "29.990.000 VNĐ"
+    },
+    cartItems: [
+      { name: "Ốp lưng silicon", quantity: 1, price: "250.000 VNĐ" }
+    ]
+  }
+  
+  // Lấy tin nhắn cuối cùng của người dùng để gợi ý trả lời
+  const lastUserMessage = messages
+    .filter(msg => msg.sender === 'user')
+    .slice(-1)[0]?.text || ''
 
   // Cuộn xuống khi có tin nhắn mới
   useEffect(() => {
@@ -31,6 +48,13 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
       setMessage('')
     }
   }
+  
+  const handleSelectReply = (reply: string) => {
+    sendMessage(reply)
+  }
+
+  // Hiển thị gợi ý chỉ trong chế độ admin/nhân viên hỗ trợ
+  const isStaff = true // Trong thực tế, nên lấy từ xác thực người dùng
 
   return (
     <div className="bg-white rounded-lg shadow-xl flex flex-col w-80 h-96 border border-gray-200">
@@ -69,6 +93,16 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
           ))
         )}
         <div ref={messagesEndRef} />
+        
+        {/* Hiển thị gợi ý trả lời (chỉ cho nhân viên) */}
+        {isStaff && lastUserMessage && (
+          <ChatReplyHelper
+            lastUserMessage={lastUserMessage}
+            conversationHistory={messages}
+            userData={userData}
+            onSelectReply={handleSelectReply}
+          />
+        )}
       </div>
 
       {/* Footer với form nhập tin nhắn */}
