@@ -26,10 +26,10 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  description?: string;
-  imageUrl?: string;
+  image?: string;
   category?: string;
-  inStock: boolean;
+  description?: string;
+  url?: string;
 }
 
 // Cấu trúc sản phẩm trong giỏ hàng
@@ -38,7 +38,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  imageUrl?: string;
+  image?: string;
 }
 
 // Cấu trúc thông tin người dùng
@@ -52,15 +52,13 @@ export interface UserProfile {
 
 // Cấu trúc đơn hàng
 export interface Order {
-  orderId: string;
-  userId: string;
+  id: string;
+  date: string;
+  status: 'pending' | 'processing' | 'completed' | 'cancelled' | string;
   items: CartItem[];
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  createdAt: Date;
-  updatedAt?: Date;
-  shippingAddress?: Address;
+  totalAmount: number;
   paymentMethod?: string;
+  shippingAddress?: string;
 }
 
 // Địa chỉ giao hàng
@@ -82,4 +80,53 @@ export interface UserPreferences {
     push: boolean;
     sms: boolean;
   };
+}
+
+// Tracking Event Types
+export type TrackingEventType = 
+  | 'view_product'
+  | 'add_to_cart'
+  | 'begin_checkout'
+  | 'purchase'
+  | string;
+
+export interface TrackingEvent {
+  anonymousId: string;
+  userId?: string;
+  eventType: TrackingEventType;
+  timestamp: string;
+  metadata: Record<string, any>;
+}
+
+export interface Cart {
+  items: CartItem[];
+  totalAmount: number;
+}
+
+// User Data
+export interface UserActivity {
+  userId: string;
+  activity_type: TrackingEventType;
+  timestamp: string;
+  metadata: Record<string, any>;
+}
+
+// Tracking client configuration
+export interface TrackingConfig {
+  apiUrl: string;
+  flushInterval: number;
+  batchSize: number;
+  debug: boolean;
+}
+
+// Tracking client interface
+export interface TrackingClient {
+  init(config?: Partial<TrackingConfig>): TrackingClient;
+  identify(userId: string): TrackingClient;
+  track(eventType: TrackingEventType, metadata?: Record<string, any>): TrackingClient;
+  trackProductView(product: Partial<Product>): TrackingClient;
+  trackAddToCart(product: Partial<CartItem>): TrackingClient;
+  trackBeginCheckout(cart: Partial<Cart>): TrackingClient;
+  trackPurchase(order: Partial<Order>): TrackingClient;
+  flush(): TrackingClient;
 } 
