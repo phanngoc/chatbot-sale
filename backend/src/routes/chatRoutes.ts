@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getSessionMessages } from '../services/messageService';
+import { getSuggestedReplies } from '../controllers/aiController';
 
 const router = express.Router();
 
@@ -19,5 +20,10 @@ router.get('/messages/:sessionId', async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * API gợi ý câu trả lời cho nhân viên hỗ trợ khách hàng
+ */
+router.post('/suggest-replies', getSuggestedReplies);
 
 export default router; 
